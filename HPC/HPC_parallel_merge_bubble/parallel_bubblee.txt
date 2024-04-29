@@ -1,0 +1,150 @@
+#include <iostream>
+#include <vector>
+#include <omp.h>
+
+using namespace std;
+
+void merge(int arr[], int low, int mid, int high) {
+    // Create vectors for left and right partitions
+    int n1 = mid - low + 1;
+    int n2 = high - mid;
+
+    vector<int> left(n1);
+    vector<int> right(n2);
+
+    // Copy all left elements
+    for (int i = 0; i < n1; i++) left[i] = arr[low + i];
+
+    // Copy all right elements
+    for (int j = 0; j < n2; j++) right[j] = arr[mid + 1 + j];
+
+    // Compare and place elements
+    int i = 0, j = 0, k = low;
+
+    while (i < n1 && j < n2) {
+        if (left[i] <= right[j]) {
+            arr[k] = left[i];
+            i++;
+        }
+        else {
+            arr[k] = right[j];
+            j++;
+        }
+        k++;
+    }
+
+    // If any elements are left out
+    while (i < n1) {
+        arr[k] = left[i];
+        i++;
+        k++;
+    }
+
+    while (j < n2) {
+        arr[k] = right[j];
+        j++;
+        k++;
+    }
+}
+
+void parallelMergeSort(int arr[], int low, int high) {
+    if (low < high) {
+        int mid = (low + high) / 2;
+
+#pragma omp parallel sections
+        {
+#pragma omp section
+            {
+                parallelMergeSort(arr, low, mid);
+            }
+
+#pragma omp section
+            {
+                parallelMergeSort(arr, mid + 1, high);
+            }
+        }
+        merge(arr, low, mid, high);
+    }
+}
+
+void mergeSort(int arr[], int low, int high) {
+    if (low < high) {
+        int mid = (low + high) / 2;
+        mergeSort(arr, low, mid);
+        mergeSort(arr, mid + 1, high);
+        merge(arr, low, mid, high);
+    }
+}
+
+int main() {
+    //int n = 10;
+    int arr[10];
+    double start_time, end_time;
+
+    // Create an array with numbers starting from n to 1.
+    for (int i = 0, j = 10; i < 10; i++, j--) arr[i] = j;
+
+    // Measure Sequential Time
+    start_time = omp_get_wtime();
+    mergeSort(arr, 0, 10 - 1);
+    end_time = omp_get_wtime();
+    cout << "Time taken by sequential algorithm: " << end_time - start_time << " seconds\n";
+
+    // Reset the array
+    for (int i = 0, j = 10; i < 10; i++, j--) arr[i] = j;
+
+    //Measure Parallel time
+    start_time = omp_get_wtime();
+    parallelMergeSort(arr, 0, 10 - 1);
+    end_time = omp_get_wtime();
+    cout << "Time taken by parallel algorithm: " << end_time - start_time << " seconds";
+
+    return 0;
+}
+
+
+thoery :- 
+Title of the Assignment: Write a program to implement Parallel Bubble Sort. Use existing
+algorithms and measure the performance of sequential and parallel algorithms.
+Objective of the Assignment: Students should be able to write a program to implement
+Parallel Bubble Sort and can measure the performance of sequential and parallel
+algorithms.
+Prerequisite:
+1. Basic of programming language
+2. Concept of Bubble Sort
+3. Concept of Parallelism
+
+What is Bubble Sort?
+Bubble Sort is a simple sorting algorithm that works by repeatedly swapping adjacent elements
+if they are in the wrong order. It is called "bubble" sort because the algorithm moves the larger
+elements towards the end of the array in a manner that resembles the rising of bubbles in a
+liquid.
+The basic algorithm of Bubble Sort is as follows:
+1. Start at the beginning of the array.
+2. Compare the first two elements. If the first element is greater than the second element,
+swap them.
+3. Move to the next pair of elements and repeat step 2.
+4. Continue the process until the end of the array is reached.
+
+
+Example of Bubble sort
+Let's say we want to sort a series of numbers 5, 3, 4, 1, and 2 so that they are arranged
+in ascending order.
+The sorting begins the first iteration by comparing the first two values. If the first value is
+greater than the second, the algorithm pushes the first value to the index of the second value.
+
+First Iteration of the Sorting
+Step 1: In the case of 5, 3, 4, 1, and 2, 5 is greater than 3. So 5 takes the position of 3 and the
+numbers become 3, 5, 4, 1, and 2.
+Step 2: The algorithm now has 3, 5, 4, 1, and 2 to compare, this time around, it compares the
+next two values, which are 5 and 4. 5 is greater than 4, so 5 takes the index of 4 and the values
+now become 3, 4, 5, 1, and 2.
+
+
+Step 3: The algorithm now has 3, 4, 5, 1, and 2 to compare. It compares the next two values,
+which are 5 and 1. 5 is greater than 1, so 5 takes the index of 1 and the numbers become 3, 4, 1,
+5, and 2.
+
+Conclusion- In this way we can implement Bubble Sort in parallel way using
+OpenMP also come to know how to how to measure performance of serial and parallel
+algorithm

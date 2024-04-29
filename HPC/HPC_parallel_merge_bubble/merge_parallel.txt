@@ -1,0 +1,123 @@
+#include<iostream>
+#include<omp.h>
+
+using namespace std;
+
+void bubble(int array[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (array[j] > array[j + 1]) swap(array[j], array[j + 1]);
+        }
+    }
+}
+
+void pBubble(int array[], int n) {
+    //Sort odd indexed numbers
+    for (int i = 0; i < n; ++i) {
+#pragma omp for
+        for (int j = 1; j < n; j += 2) {
+            if (array[j] < array[j - 1])
+            {
+                swap(array[j], array[j - 1]);
+            }
+        }
+
+        // Synchronize
+#pragma omp barrier
+
+//Sort even indexed numbers
+#pragma omp for
+        for (int j = 2; j < n; j += 2) {
+            if (array[j] < array[j - 1])
+            {
+                swap(array[j], array[j - 1]);
+            }
+        }
+    }
+}
+
+void printArray(int arr[], int n) {
+    for (int i = 0; i < n; i++) cout << arr[i] << " ";
+    cout << "\n";
+}
+
+int main() {
+    // Set up variables
+    const int n = 10;
+    int arr[n];
+    int brr[n];
+    double start_time, end_time;
+
+    // Create an array with numbers starting from n to 1
+    for (int i = 0, j = n; i < n; i++, j--) arr[i] = j;
+
+    // Sequential time
+    start_time = omp_get_wtime();
+    bubble(arr, n);
+    end_time = omp_get_wtime();
+    cout << "Sequential Bubble Sort took : " << end_time - start_time << " seconds.\n";
+    printArray(arr, n);
+
+    // Reset the array
+    for (int i = 0, j = n; i < n; i++, j--) arr[i] = j;
+
+    // Parallel time
+    start_time = omp_get_wtime();
+    pBubble(arr, n);
+    end_time = omp_get_wtime();
+    cout << "Parallel Bubble Sort took : " << end_time - start_time << " seconds.\n";
+    printArray(arr, n);
+}
+
+
+thoery:-
+
+Title of the Assignment: Write a program to implement Parallel Merge Sort. Use existing
+algorithms and measure the performance of sequential and parallel algorithms.
+Objective of the Assignment: Students should be able to Write a program to implement Parallel
+Merge Sort and can measure the performance of sequential and parallel algorithms.
+Prerequisite:
+Basic of programming language
+Concept of Merge Sort
+Concept of Parallelism
+Contents for Theory:
+What is Merge? Use of Merge Sort
+Example of Merge sort?
+Concept of OpenMP
+How Parallel Merge Sort Work
+How to measure the performance of sequential and parallel algorithms?
+What is Merge Sort?
+Merge sort is a sorting algorithm that uses a divide-and-conquer approach to sort an array or a list
+of elements. The algorithm works by recursively dividing the input array into two halves, sorting
+each half, and then merging the sorted halves to produce a sorted output.
+
+Example of Merge sort
+Now, let's see the working of merge sort Algorithm. To understand the working of the merge sort
+algorithm, let'stake an unsorted array. It will be easier to understand the merge sort via an example.
+Let the elements of array are -
+According to the merge sort, first divide the given array into two equal halves. Merge sort keeps
+dividing the list into equal parts until it cannot be further divided.
+As there are eight elements in the given array, so it is divided into two arrays of size 4
+
+Now, combine them in the same manner they were broken.
+In combining, first compare the element of each array and then combine them into another array
+in sorted order.
+So, first compare 12 and 31, both are in sorted positions. Then compare 25 and 8, and in the list of
+two values, put 8 first followed by 25. Then compare 32 and 17, sort them and put 17 first followed
+by 32. After that, compare 40 and 42, and place them sequentially.
+
+Execution time: Execution time is the amount of time it takes for the algorithm to complete its
+sorting operation. This metric can be used to compare the speed of sequential and parallel merge
+sort algorithms.
+Speedup: Speedup is the ratio of the execution time of the sequential merge sort algorithm to the
+execution time of the parallel merge sort algorithm. A speedup of greater than 1 indicates that the
+parallel algorithm is faster than the sequential algorithm.
+Efficiency: Efficiency is the ratio of the speedup to the number of processors or cores used in the
+parallel algorithm. This metric can be used to determine how well the parallel algorithm is utilizing
+the available resources.
+Scalability: Scalability is the ability of the algorithm to maintain its performance as the input size
+and number of processors or cores increase. A scalable algorithm will maintain a consistent
+speedup and efficiency as more resources are added.
+
+Conclusion- In this way we can implement Merge Sort in parallel way using OpenMP also come
+to know how to how to measure performance of serial and parallel algorithm

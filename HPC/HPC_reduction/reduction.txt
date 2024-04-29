@@ -1,0 +1,93 @@
+#include <iostream>
+#include <omp.h>
+using namespace std;
+
+int minval(int arr[], int n) {
+    int minval = arr[0];
+    #pragma omp parallel for reduction(min:minval)
+    for(int i = 0; i < n; i++) {
+        if(arr[i] < minval)
+            minval = arr[i];
+    }
+    return minval;
+}
+
+int maxval(int arr[], int n) {
+    int maxval = arr[0];
+    #pragma omp parallel for reduction(max:maxval)
+    for(int i = 0; i < n; i++) {
+        if(arr[i] > maxval)
+            maxval = arr[i];
+    }
+    return maxval;
+}
+
+int sum(int arr[], int n) {
+    int sum = 0;
+    #pragma omp parallel for reduction(+:sum)
+    for(int i = 0; i < n; i++) {
+        sum += arr[i];
+    }
+    return sum;
+}
+
+double average(int arr[], int n) {
+    return (double)sum(arr, n) / n;
+}
+
+int main() {
+    int n = 5;
+    int arr[] = {1, 2, 3, 4, 5};
+    cout << "The minimum value is: " << minval(arr, n) << '\n';
+    cout << "The maximum value is: " << maxval(arr, n) << '\n';
+    cout << "The summation is: " << sum(arr, n) << '\n';
+    cout << "The average is: " << average(arr, n) << '\n';
+    return 0;
+}
+
+
+
+
+theory:-
+Title of the Assignment: Implement Min, Max, Sum and Average operations using
+Parallel Reduction.
+
+
+What is OpenMP?
+Open specifications for Multi Processing
+● Long version: Open specifications for MultiProcessing via collaborative work between
+interested parties from the hardware and software industry, government and academia.
+● OpenMP (Open Multi-Processing) is an application programming interface (API) that
+supports multi-platform shared memory multiprocessing programming in C, C++, and
+Fortran.
+OpenMP API components are Compiler directives, Runtime library routines, Environment
+variables. Portability API is specified for C/C++ and Fortran, Implementations on almost all
+platforms including Unix/Linux and Windows
+
+Assume an in-place reduction using shared memory
+● The original vector is in device global memory
+● The shared memory is used to hold a partial sum vector
+● Each step brings the partial sum vector closer to the sum
+● The final sum will be in element 0 of the partial sum vector
+● Reduces global memory traffic due to partial sum values
+● Thread block size limits n to be less than or equal to 2,4
+
+A Simple Thread Block Design
+Each thread block takes 2*BlockDim.x input elements
+Each thread loads 2 elements into shared memory
+ shared float partialSum[2*BLOCK_SIZE];
+unsigned int t = threadIdx.x;
+partialSum[t] = input[t];
+partialSum[BLOCK_SIZE+t] = input[BLOCK_SIZE+t];
+The Reduction Steps
+for (unsigned int stride = 1;
+stride <= blockDim.x; stride *= 2)
+{
+ syncthreads();
+if (t % stride == 0)
+partialSum[2*t]+= partialSum[2*t+stride];
+}
+
+
+Conclusion- In this way we have studied parallel programming using OpenMP and
+constructed the program for parallel reduction.
